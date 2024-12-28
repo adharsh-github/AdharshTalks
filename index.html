@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdharshTalks</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #2d2d2d;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .chat-container {
+            width: 400px;
+            height: 500px;
+            background-color: #444;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+        .message {
+            margin: 10px 0;
+        }
+        .message.bot {
+            color: #76e7b5;
+        }
+        .message.user {
+            color: #ff9e6a;
+        }
+        input {
+            padding: 10px;
+            width: 100%;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="messages" id="messages"></div>
+        <input type="text" id="user-input" placeholder="Ask ADHARSH..." onkeydown="if(event.key === 'Enter') sendMessage()">
+    </div>
+    
+    <script>
+        const messagesContainer = document.getElementById("messages");
+        
+        function sendMessage() {
+            const userMessage = document.getElementById("user-input").value;
+            if (userMessage.trim() === "") return;
+
+            appendMessage(userMessage, "user");
+            document.getElementById("user-input").value = "";
+
+            fetch("https://api.openai.com/v1/completions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer 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"
+                },
+                body: JSON.stringify({
+                    model: "gpt-3.5-turbo",
+                    prompt: `Respond to this message like ADHARSH: ${userMessage}`,
+                    max_tokens: 150
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                appendMessage(data.choices[0].text.trim(), "bot");
+            });
+        }
+
+        function appendMessage(message, sender) {
+            const messageElement = document.createElement("div");
+            messageElement.classList.add("message", sender);
+            messageElement.textContent = message;
+            messagesContainer.appendChild(messageElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    </script>
+</body>
+</html>
